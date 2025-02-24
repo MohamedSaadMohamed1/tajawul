@@ -15,8 +15,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: LoginScreen(),
-      routes: {
+  home: TajawalHomePage(),
+        routes: {
         '/signup': (context) => SignUpScreen(),
         '/forgetpassword': (context) => ForgotPasswordScreen(),
       },
@@ -54,7 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     const SizedBox(height: 20),
                     SvgPicture.asset(
-                      'assets\tajawul_logo.svg',
+                      'assets/tajawul_logo.svg',
                       height: 60,
                     ),
                     const SizedBox(height: 16),
