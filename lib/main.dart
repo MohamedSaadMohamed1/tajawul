@@ -54,7 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     const SizedBox(height: 20),
                     SvgPicture.asset(
-                      'assets/tajawul_logo.svg',
+                      'assets\tajawul_logo.svg',
                       height: 60,
                     ),
                     const SizedBox(height: 16),
@@ -68,14 +68,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 32),
                     ElevatedButton.icon(
                       onPressed: () {},
-                      icon: const FaIcon(FontAwesomeIcons.google, color: Colors.black),
+                      icon: const FaIcon(FontAwesomeIcons.google,
+                          color: Colors.black),
                       label: const Text(
                         'Continue with Google',
                         style: TextStyle(color: Colors.black),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFF3DDBB),
-                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 80),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 14, horizontal: 80),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -84,12 +86,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 20),
                     const Row(
                       children: [
-                        Expanded(child: Divider(thickness: 1, color: Colors.grey)),
+                        Expanded(
+                            child: Divider(thickness: 1, color: Colors.grey)),
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 8),
-                          child: Text('Or using Email', style: TextStyle(color: Colors.grey)),
+                          child: Text('Or using Email',
+                              style: TextStyle(color: Colors.grey)),
                         ),
-                        Expanded(child: Divider(thickness: 1, color: Colors.grey)),
+                        Expanded(
+                            child: Divider(thickness: 1, color: Colors.grey)),
                       ],
                     ),
                     const SizedBox(height: 20),
@@ -131,7 +136,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                            isPasswordVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off,
                           ),
                           onPressed: () {
                             setState(() {
@@ -160,7 +167,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF1D2D24),
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 100),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 14, horizontal: 100),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -173,12 +181,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 20),
                     const Row(
                       children: [
-                        Expanded(child: Divider(thickness: 1, color: Colors.grey)),
+                        Expanded(
+                            child: Divider(thickness: 1, color: Colors.grey)),
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 8),
-                          child: Text('Not a Member?', style: TextStyle(color: Colors.grey)),
+                          child: Text('Not a Member?',
+                              style: TextStyle(color: Colors.grey)),
                         ),
-                        Expanded(child: Divider(thickness: 1, color: Colors.grey)),
+                        Expanded(
+                            child: Divider(thickness: 1, color: Colors.grey)),
                       ],
                     ),
                     const SizedBox(height: 8),
