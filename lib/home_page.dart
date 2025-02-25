@@ -1,3 +1,11 @@
+import 'package:flutter/material.dart';
+import 'package:tajawul/custom_search_bar.dart';
+import 'package:tajawul/nav_bar.dart';
+import 'package:tajawul/popular_trips_section.dart';
+import 'package:tajawul/top_picks.dart';
+import 'package:tajawul/trip_ai_section.dart';
+
+import 'custom_drawer.dart';
 
 class TajawalHomePage extends StatelessWidget {
   @override

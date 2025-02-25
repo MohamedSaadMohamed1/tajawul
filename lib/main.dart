@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart'; // Import the flutter_svg package
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:tajawul/home_page.dart';
 import 'signup.dart';
 import 'forgetpassword.dart'; // Ensure this matches the correct screen name
 
@@ -15,8 +16,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-  home: TajawalHomePage(),
-        routes: {
+      home: TajawalHomePage(),
+      routes: {
         '/signup': (context) => SignUpScreen(),
         '/forgetpassword': (context) => ForgotPasswordScreen(),
       },

@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:tajawul/trip_carousel.dart';
+
 class PopularTripsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {

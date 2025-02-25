@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+import 'package:tajawul/trip_card.dart';
 
 class TripCarousel extends StatelessWidget {
   final List<String> tripImages = [
