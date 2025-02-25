@@ -1,3 +1,6 @@
+import 'dart:ui';
+
+import 'package:flutter/material.dart';
 
 class TripAISection extends StatelessWidget {
   @override
