@@ -23,9 +23,20 @@ class CustomDrawer extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                const ActionButton(title: "Sign In"),
+                ActionButton(
+                  title: "Sign In",
+                  onTap: () {
+                    Navigator.pushNamed(context, '/login');
+                  },
+                ),
                 const SizedBox(height: 10),
-                const ActionButton(title: "Register", isPrimary: true),
+                ActionButton(
+                  title: "Register",
+                  isPrimary: true,
+                  onTap: () {
+                    Navigator.pushNamed(context, '/signup');
+                  },
+                ),
               ],
             ),
           ),
@@ -38,21 +49,25 @@ class CustomDrawer extends StatelessWidget {
 class ActionButton extends StatelessWidget {
   final String title;
   final bool isPrimary;
-  const ActionButton({required this.title, this.isPrimary = false, super.key});
+  final VoidCallback onTap; // Add onTap callback
+  const ActionButton({required this.title, this.isPrimary = false, required this.onTap, super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: isPrimary ? Colors.black : Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white),
-      ),
-      child: Text(
-        title,
-        style: TextStyle(
-          color: isPrimary ? Colors.white : Colors.white70,
+    return InkWell(
+      onTap: onTap, // Use onTap callback
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isPrimary ? Colors.black : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white),
+        ),
+        child: Text(
+          title,
+          style: TextStyle(
+            color: isPrimary ? Colors.white : Colors.white70,
+          ),
         ),
       ),
     );
