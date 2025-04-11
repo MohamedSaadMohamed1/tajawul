@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({super.key});
@@ -11,13 +12,28 @@ class CustomDrawer extends StatelessWidget {
           DrawerHeader(
             decoration: BoxDecoration(color: Colors.brown[100]),
             child: Center(
-              child: Image.asset("assets/Isolation_Mode.svg", height: 50),
+              child: SvgPicture.asset("assets/tajawul_logo.svg", height: 50),
             ),
           ),
-          const DrawerItem(title: "Explore"),
+          DrawerItem(
+            title: "Home",
+            onTap: () => {Navigator.pushNamed(context, '/home')},
+          ),
+          DrawerItem(
+            title: "Explore",
+            onTap: () {
+              Navigator.pushNamed(context, '/explore');
+            },
+          ),
           const DrawerItem(title: "Trips"),
           const DrawerItem(title: "Connect"),
           const DrawerItem(title: "About"),
+          DrawerItem(
+            title: "Add Destination",
+            onTap: () {
+              Navigator.pushNamed(context, '/addDestnation');
+            },
+          ),
           const Spacer(),
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -25,6 +41,7 @@ class CustomDrawer extends StatelessWidget {
               children: [
                 ActionButton(
                   title: "Sign In",
+                  isPrimary: true,
                   onTap: () {
                     Navigator.pushNamed(context, '/login');
                   },
@@ -50,7 +67,11 @@ class ActionButton extends StatelessWidget {
   final String title;
   final bool isPrimary;
   final VoidCallback onTap; // Add onTap callback
-  const ActionButton({required this.title, this.isPrimary = false, required this.onTap, super.key});
+  const ActionButton(
+      {required this.title,
+      this.isPrimary = false,
+      required this.onTap,
+      super.key});
 
   @override
   Widget build(BuildContext context) {
