@@ -15,10 +15,25 @@ class CustomDrawer extends StatelessWidget {
               child: SvgPicture.asset("assets/tajawul_logo.svg", height: 50),
             ),
           ),
-          const DrawerItem(title: "Explore"),
+          DrawerItem(
+            title: "Home",
+            onTap: () => {Navigator.pushNamed(context, '/home')},
+          ),
+          DrawerItem(
+            title: "Explore",
+            onTap: () {
+              Navigator.pushNamed(context, '/explore');
+            },
+          ),
           const DrawerItem(title: "Trips"),
           const DrawerItem(title: "Connect"),
           const DrawerItem(title: "About"),
+          DrawerItem(
+            title: "Add Destination",
+            onTap: () {
+              Navigator.pushNamed(context, '/addDestnation');
+            },
+          ),
           const Spacer(),
           Padding(
             padding: const EdgeInsets.all(16.0),

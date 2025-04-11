@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:tajawul/add_destination.dart';
 import 'package:tajawul/distnation.dart';
+import 'package:tajawul/email_screen.dart';
 import 'package:tajawul/explore.dart';
 import 'package:tajawul/home_page.dart';
+import 'package:tajawul/upload_destination_images.dart';
 import 'signup.dart';
 import 'forgetpassword.dart';
 import 'package:http/http.dart' as http;
@@ -22,10 +25,16 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: ExploreScreen(),
+      // ignore: prefer_const_constructors
+      home: LoginScreen(),
+      //  AddDestinationPage(),
+      //  ExploreScreen(),
       routes: {
         '/home': (context) => TajawalHomePage(),
         '/destination': (context) => DestinationScreen(),
+        '/email': (context) => VerifyEmailScreen(),
+        '/addDestnation': (context) => AddDestinationPage(),
+        '/uplodeDestinationImages': (context) => UploadDestinationImages(),
         '/explore': (context) => ExploreScreen(),
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => SignUpScreen(),

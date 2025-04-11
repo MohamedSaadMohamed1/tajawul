@@ -32,8 +32,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final url = Uri.parse('http://tajawul.runasp.net/api/Auth/signup');
     final headers = {'Content-Type': 'application/json'};
     final body = jsonEncode({
-      "firstName": _firstNameController.text.trim(),
-      "lastName": _lastNameController.text.trim(),
       "email": _emailController.text.trim(),
       "password": _passwordController.text,
       "confirmPassword": _confirmPasswordController.text,
@@ -56,7 +54,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           content: Text('Signup Successful! Please verify your email.'),
           backgroundColor: Colors.green,
         ));
-        Navigator.pushReplacementNamed(context, '/login');
+        Navigator.pushReplacementNamed(context, '/email');
       } else {
         // ❌ API Error
         setState(() {
@@ -121,71 +119,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                 ),
                 SizedBox(height: 32),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'First Name',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Serif',
-                              fontSize: 16,
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          TextFormField(
-                            controller: _firstNameController,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter your first name';
-                              }
-                              return null;
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Last Name',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Serif',
-                              fontSize: 16,
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          TextFormField(
-                            controller: _lastNameController,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter your last name';
-                              }
-                              return null;
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                Row(),
                 SizedBox(height: 16),
                 Align(
                   alignment: Alignment.centerLeft,
