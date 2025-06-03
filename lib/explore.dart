@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:tajawul/custom_drawer.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class ExploreScreen extends StatelessWidget {
+  final DestinationService destinationService = DestinationService();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,58 +29,78 @@ class ExploreScreen extends StatelessWidget {
         ),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: PlacesGrid(),
-          ),
+        child: FutureBuilder<DestinationResponse>(
+          future: destinationService.getDestinations(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData ||
+                snapshot.data!.destinations.isEmpty) {
+              return const Center(child: Text('No destinations found'));
+            } else {
+              return SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: PlacesGrid(destinations: snapshot.data!.destinations),
+                ),
+              );
+            }
+          },
         ),
       ),
     );
   }
 }
 
+class CustomDrawer extends StatelessWidget {
+  const CustomDrawer({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          const DrawerHeader(
+            decoration: BoxDecoration(
+              color: Colors.brown,
+            ),
+            child: Text('Menu'),
+          ),
+          ListTile(
+            title: const Text('Home'),
+            onTap: () {},
+          ),
+          ListTile(
+            title: const Text('Explore'),
+            onTap: () {},
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class PlacesGrid extends StatelessWidget {
-  final List<Map<String, String>> places = [
-    {
-      "imageUrl": "assets/image.png",
-      "name": "Space",
-      "location": "Alexandria, Egypt",
-      "category": "Gym",
-      "rating": "4.0",
-      "price": "Low"
-    },
-    {
-      "imageUrl": "assets/image.png",
-      "name": "Manial Palace Museum",
-      "location": "Cairo, Egypt",
-      "category": "Museum",
-      "rating": "4.7",
-      "price": "Medium"
-    },
-    {
-      "imageUrl": "assets/image.png",
-      "name": "Nikki Beach Resort & Spa Dubai",
-      "location": "Dubai, United Arab Emirates",
-      "category": "Hotel",
-      "rating": "5.0",
-      "price": "High"
-    },
-  ];
+  final List<Destination> destinations;
+
+  const PlacesGrid({required this.destinations, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: places.map((place) {
+      children: destinations.map((destination) {
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 10.0),
           child: CustomCard(
-            imageUrl: place["imageUrl"]!,
-            name: place["name"]!,
-            location: place["location"]!,
-            category: place["category"]!,
-            rating: place["rating"]!,
-            price: place["price"]!,
+            imageUrl: destination.coverImage,
+            name: destination.name,
+            location: '${destination.city}, ${destination.country}',
+            category: destination.type,
+            rating: destination.averageRating.toString(),
+            price: destination.priceRange,
           ),
         );
       }).toList(),
@@ -100,7 +123,8 @@ class CustomCard extends StatelessWidget {
     required this.category,
     required this.rating,
     required this.price,
-  });
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -118,25 +142,42 @@ class CustomCard extends StatelessWidget {
                   topLeft: Radius.circular(15),
                   topRight: Radius.circular(15),
                 ),
-                child: Image.asset(
-                  imageUrl,
-                  width: double.infinity,
-                  height: 180,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      height: 180,
-                      color: Colors.grey[300],
-                      child: const Center(
-                        child: Icon(Icons.image_not_supported,
-                            size: 50, color: Colors.grey),
+                child: imageUrl.isNotEmpty
+                    ? Image.network(
+                        imageUrl,
+                        width: double.infinity,
+                        height: 180,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            height: 180,
+                            color: Colors.grey[300],
+                            child: const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 180,
+                            color: Colors.grey[300],
+                            child: const Center(
+                              child: Icon(Icons.image_not_supported,
+                                  size: 50, color: Colors.grey),
+                            ),
+                          );
+                        },
+                      )
+                    : Container(
+                        height: 180,
+                        color: Colors.grey[300],
+                        child: const Center(
+                          child: Icon(Icons.image_not_supported,
+                              size: 50, color: Colors.grey),
+                        ),
                       ),
-                    );
-                  },
-                ),
               ),
-
-              // Favorite Icon in top right
               Positioned(
                 top: 10,
                 right: 10,
@@ -148,14 +189,10 @@ class CustomCard extends StatelessWidget {
                   child: IconButton(
                     icon:
                         const Icon(Icons.favorite_border, color: Colors.white),
-                    onPressed: () {
-                      // Add favorite logic
-                    },
+                    onPressed: () {},
                   ),
                 ),
               ),
-
-              // Location Tag in bottom left
               Positioned(
                 bottom: 10,
                 left: 10,
@@ -185,8 +222,6 @@ class CustomCard extends StatelessWidget {
               ),
             ],
           ),
-
-          // Text Information
           Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
@@ -225,5 +260,120 @@ class CustomCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class Destination {
+  final String destinationId;
+  final String name;
+  final String description;
+  final String coverImage;
+  final String type;
+  final String country;
+  final String city;
+  final String priceRange;
+  final bool isVerified;
+  final bool isOpen24Hours;
+  final String? openTime;
+  final String? closeTime;
+  final double averageRating;
+  final int visitorsCount;
+  final List<Location> locations;
+
+  Destination({
+    required this.destinationId,
+    required this.name,
+    required this.description,
+    required this.coverImage,
+    required this.type,
+    required this.country,
+    required this.city,
+    required this.priceRange,
+    required this.isVerified,
+    required this.isOpen24Hours,
+    this.openTime,
+    this.closeTime,
+    required this.averageRating,
+    required this.visitorsCount,
+    required this.locations,
+  });
+
+  factory Destination.fromJson(Map<String, dynamic> json) {
+    return Destination(
+      destinationId: json['destinationId'],
+      name: json['name'],
+      description: json['description'],
+      coverImage: json['coverImage'] ?? '',
+      type: json['type'],
+      country: json['country'],
+      city: json['city'],
+      priceRange: json['priceRange'],
+      isVerified: json['isVerified'],
+      isOpen24Hours: json['isOpen24Hours'],
+      openTime: json['openTime'],
+      closeTime: json['closeTime'],
+      averageRating: (json['averageRating'] ?? 0).toDouble(),
+      visitorsCount: json['visitorsCount'] ?? 0,
+      locations: (json['locations'] as List)
+          .map((loc) => Location.fromJson(loc))
+          .toList(),
+    );
+  }
+}
+
+class Location {
+  final double longitude;
+  final double latitude;
+  final String address;
+
+  Location({
+    required this.longitude,
+    required this.latitude,
+    required this.address,
+  });
+
+  factory Location.fromJson(Map<String, dynamic> json) {
+    return Location(
+      longitude: json['longitude'],
+      latitude: json['latitude'],
+      address: json['address'],
+    );
+  }
+}
+
+class DestinationResponse {
+  final int count;
+  final List<Destination> destinations;
+
+  DestinationResponse({
+    required this.count,
+    required this.destinations,
+  });
+
+  factory DestinationResponse.fromJson(Map<String, dynamic> json) {
+    return DestinationResponse(
+      count: json['count'],
+      destinations: (json['destinations'] as List)
+          .map((dest) => Destination.fromJson(dest))
+          .toList(),
+    );
+  }
+}
+
+class DestinationService {
+  static const String baseUrl = 'http://tajawul.runasp.net/api';
+
+  Future<DestinationResponse> getDestinations() async {
+    final response = await http.get(
+      Uri.parse(
+          '$baseUrl/Destination?hour=0&minute=0&year=0&month=0&day=0&dayOfWeek=0'),
+      headers: {'accept': '*/*'},
+    );
+
+    if (response.statusCode == 200) {
+      return DestinationResponse.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('Failed to load destinations');
+    }
   }
 }

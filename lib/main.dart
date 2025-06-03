@@ -12,6 +12,7 @@ import 'forgetpassword.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'complete_profile_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,7 +27,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       // ignore: prefer_const_constructors
-      home: LoginScreen(),
+      home: CompleteProfilePage(),
+      //LoginScreen(),
       //  AddDestinationPage(),
       //  ExploreScreen(),
       routes: {
@@ -39,6 +41,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => SignUpScreen(),
         '/forgetpassword': (context) => ForgotPasswordScreen(),
+        '/CompleteProfilePage': (context) => CompleteProfilePage(),
       },
     );
   }
