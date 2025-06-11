@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tajawul/add_destination.dart';
+import 'package:tajawul/copleatprofile_screen.dart';
 import 'package:tajawul/distnation.dart';
 import 'package:tajawul/email_screen.dart';
 import 'package:tajawul/explore.dart';
@@ -13,6 +14,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'complete_profile_page.dart';
+import 'models/destination.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,14 +29,14 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       // ignore: prefer_const_constructors
-      home: CompleteProfilePage(),
+      home: TajawalHomePage(),
       //LoginScreen(),
       //  AddDestinationPage(),
       //  ExploreScreen(),
       routes: {
         '/home': (context) => TajawalHomePage(),
-        '/destination': (context) => DestinationScreen(),
         '/email': (context) => VerifyEmailScreen(),
+        '/profilecom': (context) => VerifyProfileScreen(),
         '/addDestnation': (context) => AddDestinationPage(),
         '/uplodeDestinationImages': (context) => UploadDestinationImages(),
         '/explore': (context) => ExploreScreen(),
@@ -42,6 +44,22 @@ class MyApp extends StatelessWidget {
         '/signup': (context) => SignUpScreen(),
         '/forgetpassword': (context) => ForgotPasswordScreen(),
         '/CompleteProfilePage': (context) => CompleteProfilePage(),
+      },
+      onGenerateRoute: (settings) {
+        if (settings.name == '/destination') {
+          final args = settings.arguments;
+          if (args is Destination) {
+            return MaterialPageRoute(
+              builder: (context) => DestinationScreen(destination: args),
+            );
+          }
+          return MaterialPageRoute(
+            builder: (context) => Scaffold(
+              body: Center(child: Text('No destination provided!')),
+            ),
+          );
+        }
+        return null; // fallback to routes map
       },
     );
   }
@@ -68,8 +86,8 @@ class _LoginScreenState extends State<LoginScreen> {
     _showSnackBar(emailController.text.trim() + passwordController.text.trim());
 
     setState(() => isLoading = true);
-
-    final url = Uri.parse('http://tajawul.runasp.net/api/Auth/signin');
+    final url = Uri.parse(
+        'https://tajawul-caddcdduayewd2bv.uaenorth-01.azurewebsites.net/api/Auth/signin');
 
     final response = await http.post(
       url,
@@ -79,8 +97,6 @@ class _LoginScreenState extends State<LoginScreen> {
         'password': passwordController.text.trim(),
       }),
     );
-    _showSnackBar(response.statusCode.toString());
-    _showSnackBar(response.body);
 
     setState(() => isLoading = false);
 
@@ -91,7 +107,23 @@ class _LoginScreenState extends State<LoginScreen> {
       if (token != null) {
         await _saveToken(token);
         _showSnackBar('Login successful!');
-        Navigator.pushReplacementNamed(context, '/home');
+        // Fetch user profile after login
+        final profileResponse = await http.get(
+          Uri.parse(
+              'https://tajawul-caddcdduayewd2bv.uaenorth-01.azurewebsites.net/api/User/profile'),
+          headers: {
+            'accept': '*/*',
+            'Authorization': 'Bearer ' + token,
+          },
+        );
+        _showSnackBar(profileResponse.statusCode.toString());
+
+        if (profileResponse.statusCode == 500) {
+          Navigator.pushReplacementNamed(context, '/CompleteProfilePage');
+        } else {
+          // If profile fetch fails, fallback to home
+          Navigator.pushReplacementNamed(context, '/home');
+        }
       } else {
         _showSnackBar('Token not received');
       }

@@ -20,6 +20,10 @@ dependencies:
   vector_math: any
   http: any
   dio: ^5.4.0
+  intl: ^0.18.1
+  path: ^1.8.3
+  permission_handler: ^10.4.0  # For runtime permissions
+  device_info_plus: ^9.0.0     # To check Android SDK version
   image_picker: ^1.0.4
   file_picker: ^6.1.1
 
