@@ -1,8 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class CustomDrawer extends StatelessWidget {
+class CustomDrawer extends StatefulWidget {
   const CustomDrawer({super.key});
+
+  @override
+  State<CustomDrawer> createState() => _CustomDrawerState();
+}
+
+class _CustomDrawerState extends State<CustomDrawer> {
+  bool isLoggedIn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isLoggedIn = prefs.getString('auth_token') != null;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +46,12 @@ class CustomDrawer extends StatelessWidget {
               Navigator.pushNamed(context, '/explore');
             },
           ),
-          const DrawerItem(title: "Trips"),
+          DrawerItem(
+            title: "Trips",
+            onTap: () {
+              Navigator.pushNamed(context, '/trips');
+            },
+          ),
           const DrawerItem(title: "Connect"),
           const DrawerItem(title: "About"),
           DrawerItem(
@@ -39,21 +65,22 @@ class CustomDrawer extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                ActionButton(
-                  title: "Sign In",
-                  isPrimary: true,
-                  onTap: () {
-                    Navigator.pushNamed(context, '/login');
-                  },
-                ),
-                const SizedBox(height: 10),
-                ActionButton(
-                  title: "Register",
-                  isPrimary: true,
-                  onTap: () {
-                    Navigator.pushNamed(context, '/signup');
-                  },
-                ),
+                if (!isLoggedIn)
+                  ActionButton(
+                    title: "Sign In",
+                    isPrimary: true,
+                    onTap: () {
+                      Navigator.pushNamed(context, '/login');
+                    },
+                  ),
+                if (!isLoggedIn) const SizedBox(height: 10),
+                // ActionButton(
+                //   title: "Register",
+                //   isPrimary: true,
+                //   onTap: () {
+                //     Navigator.pushNamed(context, '/signup');
+                //   },
+                // ),
               ],
             ),
           ),

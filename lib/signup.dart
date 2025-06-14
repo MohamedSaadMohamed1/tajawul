@@ -44,14 +44,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
       _errorMessage = '';
     });
 
-    final url = Uri.parse('http://tajawul.runasp.net/api/Auth/signup');
+    final url = Uri.parse(
+        'https://tajawul-caddcdduayewd2bv.uaenorth-01.azurewebsites.net/api/Auth/signup');
     final headers = {'Content-Type': 'application/json'};
     final body = jsonEncode({
       "email": _emailController.text.trim(),
       "password": _passwordController.text,
       "confirmPassword": _confirmPasswordController.text,
-      "username": _usernameController.text.trim(),
-      "clientURI": "your_client_uri_here"
+      "clientURI": "https://tajawul.vercel.app/email-verification"
     });
     _showSnackBar(_firstNameController.text.trim() +
         _lastNameController.text.trim() +

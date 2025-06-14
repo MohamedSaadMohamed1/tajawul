@@ -4,10 +4,61 @@ import 'package:tajawul/nav_bar.dart';
 import 'package:tajawul/popular_trips_section.dart';
 import 'package:tajawul/top_picks.dart';
 import 'package:tajawul/trip_ai_section.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'custom_drawer.dart';
 
-class TajawalHomePage extends StatelessWidget {
+class TajawalHomePage extends StatefulWidget {
+  @override
+  _TajawalHomePageState createState() => _TajawalHomePageState();
+}
+
+class _TajawalHomePageState extends State<TajawalHomePage> {
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserProfile();
+  }
+
+  Future<void> _fetchUserProfile() async {
+    // First upload the image
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token') ?? '';
+
+    if (token != null && token.isNotEmpty) {
+      // Fetch user profile after login
+      final profileResponse = await http.get(
+        Uri.parse(
+            'https://tajawul-caddcdduayewd2bv.uaenorth-01.azurewebsites.net/api/User/profile'),
+        headers: {
+          'accept': '*/*',
+          'Authorization': 'Bearer ' + token,
+        },
+      );
+      _showSnackBar(profileResponse.statusCode.toString());
+
+      if (profileResponse.statusCode == 500) {
+        Navigator.pushReplacementNamed(context, '/CompleteProfilePage');
+      } else if (profileResponse.statusCode == 200) {
+        // Parse the response body first
+        final responseData = jsonDecode(profileResponse.body);
+        if (responseData['firstName'] == null ||
+            responseData['firstName'] == "") {
+          Navigator.pushReplacementNamed(context, '/CompleteProfilePage');
+        }
+      }
+    } else {
+      _showSnackBar('user not login');
+    }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;

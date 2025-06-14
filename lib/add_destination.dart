@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:tajawul/custom_drawer.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AddDestinationPage extends StatelessWidget {
   const AddDestinationPage({super.key});
@@ -17,7 +20,7 @@ class AddDestinationPage extends StatelessWidget {
       backgroundColor: const Color(0xFFFCF7F0),
       body: const SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(20.0),
           child: DestinationForm(),
         ),
       ),
@@ -39,12 +42,122 @@ class _DestinationFormState extends State<DestinationForm> {
   String? selectedCountry;
   String? selectedPriceRange;
 
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _descController = TextEditingController();
+  final TextEditingController _establishedController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _longitudeController = TextEditingController();
+  final TextEditingController _latitudeController = TextEditingController();
+
+  final List<Map<String, String>> socialMediaLinks = [];
+  final TextEditingController _platformController = TextEditingController();
+  final TextEditingController _urlController = TextEditingController();
+
   final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
+
+  Future<void> _submitForm() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final token = prefs.getString('auth_token') ?? '';
+
+        if (token.isEmpty) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content: Text("Authentication required. Please login.")),
+            );
+          }
+          return;
+        }
+
+        final body = {
+          "name": _nameController.text,
+          "description": _descController.text,
+          "type": selectedType,
+          "priceRange": selectedPriceRange?.toLowerCase(),
+          "country": selectedCountry?.toLowerCase(),
+          "city": selectedCity?.toLowerCase(),
+          "locations": [
+            {
+              "longitude": double.tryParse(_longitudeController.text) ?? 0,
+              "latitude": double.tryParse(_latitudeController.text) ?? 0,
+              "address": _addressController.text
+            }
+          ],
+          "isOpen24Hours": isOpen24Hours,
+          "establishedAt": _establishedController.text,
+          "socialMediaLinks": socialMediaLinks,
+        };
+
+        final url = Uri.parse(
+            "https://tajawul-caddcdduayewd2bv.uaenorth-01.azurewebsites.net/api/Destination");
+        final response = await http.post(
+          url,
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer $token",
+          },
+          body: json.encode(body),
+        );
+
+        if (context.mounted) {
+          if (response.statusCode == 200 || response.statusCode == 201) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content: Text("Destination Created Successfully!")),
+            );
+            Navigator.pushNamed(context, '/uplodeDestinationImages');
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content:
+                      Text("Error: ${response.statusCode} - ${response.body}")),
+            );
+          }
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Network Error: $e")),
+          );
+        }
+      } finally {
+        if (context.mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _descController.dispose();
+    _establishedController.dispose();
+    _addressController.dispose();
+    _longitudeController.dispose();
+    _latitudeController.dispose();
+    _platformController.dispose();
+    _urlController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     const sectionTextStyle = TextStyle(
-        fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1D4D4F));
+      fontWeight: FontWeight.w600,
+      fontSize: 13,
+      letterSpacing: 1.2,
+      color: Colors.grey,
+    );
 
     return Form(
       key: _formKey,
@@ -52,15 +165,16 @@ class _DestinationFormState extends State<DestinationForm> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 10),
-          const Text("General Info", style: sectionTextStyle),
+          const Text("GENERAL INFO", style: sectionTextStyle),
           const Divider(),
-          _buildTextField(label: 'Destination Name'),
+          _buildTextField(
+              controller: _nameController, label: 'Destination Name'),
           Row(
             children: [
               Expanded(
                 child: _buildDropdown(
                   label: "Destination Type",
-                  items: const ["Museum", "Park", "Hotel"],
+                  items: const ["Museum", "Park", "Hotel", "Co-Working Space"],
                   onChanged: (val) => selectedType = val,
                 ),
               ),
@@ -74,26 +188,43 @@ class _DestinationFormState extends State<DestinationForm> {
               ),
             ],
           ),
-          _buildTextField(label: 'Description', maxLines: 3),
-          _buildTextField(label: 'Established At', hint: 'mm/dd/yyyy'),
-          const SizedBox(height: 20),
-          const Text("Location Details", style: sectionTextStyle),
+          _buildTextField(
+            controller: _descController,
+            label: 'Description',
+            maxLines: 3,
+          ),
+          _buildTextField(
+            controller: _establishedController,
+            label: 'Established At',
+            hint: 'yyyy-mm-dd',
+          ),
+          const SizedBox(height: 24),
+          const Text("LOCATION DETAILS", style: sectionTextStyle),
           const Divider(),
           _buildDropdown(
             label: "City",
-            items: const ["Cairo", "Paris", "NYC"],
+            items: const ["Cairo", "Alexandria", "Paris", "NYC"],
             onChanged: (val) => selectedCity = val,
           ),
-          _buildTextField(label: "Address"),
+          _buildTextField(
+            controller: _addressController,
+            label: "Address",
+          ),
           Row(
             children: [
-              Expanded(child: _buildTextField(label: "Longitude")),
+              Expanded(
+                child: _buildTextField(
+                    controller: _longitudeController, label: "Longitude"),
+              ),
               const SizedBox(width: 10),
-              Expanded(child: _buildTextField(label: "Latitude")),
+              Expanded(
+                child: _buildTextField(
+                    controller: _latitudeController, label: "Latitude"),
+              ),
             ],
           ),
-          const SizedBox(height: 20),
-          const Text("Operating Hours & Pricing", style: sectionTextStyle),
+          const SizedBox(height: 24),
+          const Text("OPERATING HOURS & PRICING", style: sectionTextStyle),
           const Divider(),
           CheckboxListTile(
             contentPadding: EdgeInsets.zero,
@@ -109,49 +240,73 @@ class _DestinationFormState extends State<DestinationForm> {
             Row(
               children: [
                 Expanded(
-                    child:
-                        _buildTextField(label: "Open Time", hint: "--:-- --")),
+                  child: _buildTextField(label: "Open Time", hint: "--:-- --"),
+                ),
                 const SizedBox(width: 10),
                 Expanded(
-                    child:
-                        _buildTextField(label: "Close Time", hint: "--:-- --")),
+                  child: _buildTextField(label: "Close Time", hint: "--:-- --"),
+                ),
               ],
             ),
           _buildDropdown(
             label: "Price Range",
-            items: const ["Free", "\$", "\$\$", "\$\$\$"],
+            items: const ["Free", "Low", "Medium", "High"],
             onChanged: (val) => selectedPriceRange = val,
           ),
-          const SizedBox(height: 20),
-          const Text("Contact & Social Media", style: sectionTextStyle),
+          const SizedBox(height: 24),
+          const Text("CONTACT & SOCIAL MEDIA", style: sectionTextStyle),
           const Divider(),
+          _buildTextField(
+            controller: _platformController,
+            label: "Social Media Platform",
+          ),
+          const SizedBox(height: 8),
+          _buildTextField(
+            controller: _urlController,
+            label: "Social Media URL",
+          ),
+          TextButton.icon(
+            onPressed: () {
+              if (_platformController.text.isNotEmpty &&
+                  _urlController.text.isNotEmpty) {
+                setState(() {
+                  socialMediaLinks.add({
+                    "platform": _platformController.text,
+                    "url": _urlController.text,
+                  });
+                  _platformController.clear();
+                  _urlController.clear();
+                });
+              }
+            },
+            icon: const Icon(Icons.add),
+            label: const Text("Add Social Link"),
+          ),
           Wrap(
             spacing: 8,
-            children: [
-              _buildChip("+ Add Phone Number"),
-              _buildChip("+ Add Website"),
-              _buildChip("+ Add Social Media"),
-            ],
+            children: socialMediaLinks
+                .map((e) => Chip(label: Text(e['platform']!)))
+                .toList(),
           ),
           const SizedBox(height: 25),
-          Center(
+          SizedBox(
+            width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  // handle submit
-                  Navigator.pushNamed(context, '/uplodeDestinationImages');
-                }
-              },
+              onPressed: _isLoading ? null : _submitForm,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.brown,
-                foregroundColor: Colors.black,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: const Text("Create Destination"),
+              child: _isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text(
+                      "Create Destination",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
             ),
           ),
         ],
@@ -159,16 +314,25 @@ class _DestinationFormState extends State<DestinationForm> {
     );
   }
 
-  Widget _buildTextField(
-      {required String label, String? hint, int maxLines = 1}) {
+  Widget _buildTextField({
+    required String label,
+    String? hint,
+    int maxLines = 1,
+    TextEditingController? controller,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextFormField(
+        controller: controller,
         maxLines: maxLines,
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
-          border: const OutlineInputBorder(),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
         ),
         validator: (val) => val == null || val.isEmpty ? 'Required' : null,
       ),
@@ -184,26 +348,19 @@ class _DestinationFormState extends State<DestinationForm> {
       padding: const EdgeInsets.only(bottom: 16),
       child: DropdownButtonFormField<String>(
         decoration: InputDecoration(
-            labelText: label, border: const OutlineInputBorder()),
+          labelText: label,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
         items: items
             .map((e) => DropdownMenuItem(value: e, child: Text(e)))
             .toList(),
         onChanged: onChanged,
         validator: (val) => val == null ? 'Required' : null,
       ),
-    );
-  }
-
-  Widget _buildChip(String label) {
-    return ActionChip(
-      label: Text(label),
-      backgroundColor: const Color(0xFFEBF1EE),
-      shape: StadiumBorder(
-        side: BorderSide(color: Colors.brown),
-      ),
-      onPressed: () {
-        Navigator.pushNamed(context, '/uplodeDestinationImages');
-      },
     );
   }
 }
