@@ -46,7 +46,12 @@ class _CustomDrawerState extends State<CustomDrawer> {
               Navigator.pushNamed(context, '/explore');
             },
           ),
-          const DrawerItem(title: "Trips"),
+          DrawerItem(
+            title: "Trips",
+            onTap: () {
+              Navigator.pushNamed(context, '/trips');
+            },
+          ),
           const DrawerItem(title: "Connect"),
           const DrawerItem(title: "About"),
           DrawerItem(

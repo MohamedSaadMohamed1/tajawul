@@ -6,6 +6,7 @@ import 'package:tajawul/copleatprofile_screen.dart';
 import 'package:tajawul/distnation.dart';
 import 'package:tajawul/email_screen.dart';
 import 'package:tajawul/explore.dart';
+import 'package:tajawul/explore_trips_page.dart';
 import 'package:tajawul/home_page.dart';
 import 'package:tajawul/upload_destination_images.dart';
 import 'signup.dart';
@@ -44,6 +45,7 @@ class MyApp extends StatelessWidget {
         '/signup': (context) => SignUpScreen(),
         '/forgetpassword': (context) => ForgotPasswordScreen(),
         '/CompleteProfilePage': (context) => CompleteProfilePage(),
+        '/trips': (context) => ExploreTripsPage()
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/destination') {

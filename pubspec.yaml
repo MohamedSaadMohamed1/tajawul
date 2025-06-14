@@ -26,6 +26,8 @@ dependencies:
   device_info_plus: ^9.0.0     # To check Android SDK version
   image_picker: ^1.0.4
   file_picker: ^6.1.1
+  cached_network_image: ^3.3.0
+  timeline_tile: ^2.0.0
 
 dev_dependencies:
   flutter_test:
