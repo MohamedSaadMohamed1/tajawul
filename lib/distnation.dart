@@ -210,19 +210,19 @@ class DestinationContent extends StatelessWidget {
           ],
 
           // Action Buttons
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ElevatedButton(
-                onPressed: () {},
-                child: const Text("Write Review"),
-              ),
-              ElevatedButton(
-                onPressed: () {},
-                child: const Text("Share"),
-              ),
-            ],
-          ),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          //   children: [
+          //     ElevatedButton(
+          //       onPressed: () {},
+          //       child: const Text("Write Review"),
+          //     ),
+          //     ElevatedButton(
+          //       onPressed: () {},
+          //       child: const Text("Share"),
+          //     ),
+          //   ],
+          // ),
         ],
       ),
     );

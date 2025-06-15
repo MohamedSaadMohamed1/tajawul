@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:tajawul/custom_drawer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tajawul/upload_destination_images.dart';
 
 class AddDestinationPage extends StatelessWidget {
   const AddDestinationPage({super.key});
@@ -106,14 +107,30 @@ class _DestinationFormState extends State<DestinationForm> {
           body: json.encode(body),
         );
 
-        if (context.mounted) {
-          if (response.statusCode == 200 || response.statusCode == 201) {
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          final responseData = json.decode(response.body);
+          _showResponseBottomSheet(responseData);
+          final createdDestinationId =
+              responseData['id'] ?? responseData['destinationId'];
+
+          if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                   content: Text("Destination Created Successfully!")),
             );
-            Navigator.pushNamed(context, '/uplodeDestinationImages');
-          } else {
+
+            // Navigate to image upload screen
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => UploadDestinationImages(
+                  destinationId: createdDestinationId.toString(),
+                ),
+              ),
+            );
+          }
+        } else {
+          if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                   content:
@@ -124,7 +141,7 @@ class _DestinationFormState extends State<DestinationForm> {
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Network Error: $e")),
+            SnackBar(content: Text("Error: ${e.toString()}")),
           );
         }
       } finally {
@@ -135,6 +152,41 @@ class _DestinationFormState extends State<DestinationForm> {
         }
       }
     }
+  }
+
+  void _showResponseBottomSheet(Map<String, dynamic> responseData) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'API Response',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Text(
+                    responseData.toString(),
+                    style: const TextStyle(fontFamily: 'monospace'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override

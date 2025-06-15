@@ -29,39 +29,51 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      // ignore: prefer_const_constructors
       home: TajawalHomePage(),
-      //LoginScreen(),
-      //  AddDestinationPage(),
-      //  ExploreScreen(),
       routes: {
         '/home': (context) => TajawalHomePage(),
         '/email': (context) => VerifyEmailScreen(),
         '/profilecom': (context) => VerifyProfileScreen(),
         '/addDestnation': (context) => AddDestinationPage(),
-        '/uplodeDestinationImages': (context) => UploadDestinationImages(),
         '/explore': (context) => ExploreScreen(),
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => SignUpScreen(),
         '/forgetpassword': (context) => ForgotPasswordScreen(),
         '/CompleteProfilePage': (context) => CompleteProfilePage(),
-        '/trips': (context) => ExploreTripsPage()
+        '/trips': (context) => ExploreTripsPage(),
       },
       onGenerateRoute: (settings) {
-        if (settings.name == '/destination') {
-          final args = settings.arguments;
-          if (args is Destination) {
+        switch (settings.name) {
+          case '/destination':
+            final args = settings.arguments;
+            if (args is Destination) {
+              return MaterialPageRoute(
+                builder: (context) => DestinationScreen(destination: args),
+              );
+            }
             return MaterialPageRoute(
-              builder: (context) => DestinationScreen(destination: args),
+              builder: (context) => Scaffold(
+                body: Center(child: Text('No destination provided!')),
+              ),
             );
-          }
-          return MaterialPageRoute(
-            builder: (context) => Scaffold(
-              body: Center(child: Text('No destination provided!')),
-            ),
-          );
+
+          case '/uplodeDestinationImages':
+            final destinationId = settings.arguments as String?;
+            if (destinationId == null || destinationId.isEmpty) {
+              return MaterialPageRoute(
+                builder: (context) => Scaffold(
+                  body: Center(child: Text('No destination ID provided!')),
+                ),
+              );
+            }
+            return MaterialPageRoute(
+              builder: (context) =>
+                  UploadDestinationImages(destinationId: destinationId),
+            );
+
+          default:
+            return null;
         }
-        return null; // fallback to routes map
       },
     );
   }
@@ -85,56 +97,55 @@ class _LoginScreenState extends State<LoginScreen> {
       _showSnackBar('Please enter email and password');
       return;
     }
-    _showSnackBar(emailController.text.trim() + passwordController.text.trim());
 
     setState(() => isLoading = true);
-    final url = Uri.parse(
-        'https://tajawul-caddcdduayewd2bv.uaenorth-01.azurewebsites.net/api/Auth/signin');
+    try {
+      final url = Uri.parse(
+          'https://tajawul-caddcdduayewd2bv.uaenorth-01.azurewebsites.net/api/Auth/signin');
 
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'email': emailController.text.trim(),
-        'password': passwordController.text.trim(),
-      }),
-    );
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': emailController.text.trim(),
+          'password': passwordController.text.trim(),
+        }),
+      );
 
-    setState(() => isLoading = false);
+      if (response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        final token = data['token'];
 
-    if (response.statusCode == 201) {
-      final data = jsonDecode(response.body);
-      final token = data['token']; // Assuming API returns a "token" field
+        if (token != null) {
+          await _saveToken(token);
+          _showSnackBar('Login successful!');
 
-      if (token != null) {
-        await _saveToken(token);
-        _showSnackBar('Login successful!');
-        // Fetch user profile after login
-        final profileResponse = await http.get(
-          Uri.parse(
-              'https://tajawul-caddcdduayewd2bv.uaenorth-01.azurewebsites.net/api/User/profile'),
-          headers: {
-            'accept': '*/*',
-            'Authorization': 'Bearer ' + token,
-          },
-        );
-        _showSnackBar(profileResponse.statusCode.toString());
+          final profileResponse = await http.get(
+            Uri.parse(
+                'https://tajawul-caddcdduayewd2bv.uaenorth-01.azurewebsites.net/api/User/profile'),
+            headers: {
+              'accept': '*/*',
+              'Authorization': 'Bearer $token',
+            },
+          );
 
-        if (profileResponse.statusCode == 500) {
-          Navigator.pushReplacementNamed(context, '/CompleteProfilePage');
+          if (profileResponse.statusCode == 500) {
+            Navigator.pushReplacementNamed(context, '/CompleteProfilePage');
+          } else {
+            Navigator.pushReplacementNamed(context, '/home');
+          }
         } else {
-          // If profile fetch fails, fallback to home
-          Navigator.pushReplacementNamed(context, '/home');
+          _showSnackBar('Token not received');
         }
       } else {
-        _showSnackBar('Token not received');
+        final errorMessage =
+            jsonDecode(response.body)['message'] ?? 'Login failed';
+        _showSnackBar(errorMessage);
       }
-    } else {
-      final errorMessage =
-          jsonDecode(response.body)['message'] ?? 'Login failed';
-      _showSnackBar(errorMessage +
-          emailController.text.trim() +
-          passwordController.text.trim());
+    } catch (e) {
+      _showSnackBar('Error: ${e.toString()}');
+    } finally {
+      setState(() => isLoading = false);
     }
   }
 
@@ -146,19 +157,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('auth_token');
-  }
-
-  Future<void> _checkLoginStatus() async {
-    final token = await _getToken();
-    if (token != null) {
-      Navigator.pushReplacementNamed(context, '/home');
-    }
-  }
-
-  Future<void> _logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token');
-    Navigator.pushReplacementNamed(context, '/login');
   }
 
   void _showSnackBar(String message) {

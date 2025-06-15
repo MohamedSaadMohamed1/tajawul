@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tajawul/distnation.dart';
 import 'package:tajawul/models/destination.dart';
 import 'dart:convert';
@@ -233,13 +234,24 @@ class DestinationResponse {
 }
 
 class DestinationService {
-  static const String baseUrl = 'http://tajawul.runasp.net/api';
+  static const String baseUrl =
+      'https://tajawul-caddcdduayewd2bv.uaenorth-01.azurewebsites.net/api';
 
   Future<DestinationResponse> getDestinations() async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token') ?? '';
+
+      if (token.isEmpty) {
+        throw Exception('Authentication required. Please login.');
+      }
+
       final response = await http.get(
         Uri.parse('$baseUrl/Destination'),
-        headers: {'accept': 'application/json'},
+        headers: {
+          'accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
       ).timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
@@ -252,8 +264,10 @@ class DestinationService {
       } else {
         throw Exception('Failed to load destinations: ${response.statusCode}');
       }
+    } on http.ClientException catch (e) {
+      throw Exception('Network error: ${e.message}');
     } catch (e) {
-      throw Exception('Network error: $e');
+      throw Exception('Error: $e');
     }
   }
 }
